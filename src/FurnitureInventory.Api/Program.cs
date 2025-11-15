@@ -3,6 +3,9 @@ using FurnitureInventory.Core.Interfaces;
 using FurnitureInventory.Infrastructure.Data;
 using FurnitureInventory.Infrastructure.Repositories;
 using FurnitureInventory.Infrastructure.Services;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +29,34 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IRfidService, RfidService>();
 builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
 
+// Configuration de la localisation
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+// Configure supported cultures for localization
+var supportedCultures = new[]
+{
+    new CultureInfo("en"),
+    new CultureInfo("fr")
+};
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("en");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    
+    // Request culture providers order:
+    // 1. Query string (?culture=fr)
+    // 2. Cookie
+    // 3. Accept-Language header
+    options.RequestCultureProviders = new List<IRequestCultureProvider>
+    {
+        new QueryStringRequestCultureProvider(),
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
+    };
+});
+
 builder.Services.AddControllers();
 
 // Configuration de Swagger/OpenAPI
@@ -40,6 +71,10 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Configure localization middleware
+var localizationOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
+app.UseRequestLocalization(localizationOptions);
 
 // Création automatique de la base de données au démarrage
 using (var scope = app.Services.CreateScope())

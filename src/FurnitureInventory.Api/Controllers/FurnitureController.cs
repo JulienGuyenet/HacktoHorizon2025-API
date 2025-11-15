@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using FurnitureInventory.Core.Entities;
 using FurnitureInventory.Core.Interfaces;
+using FurnitureInventory.Api.Models;
 
 namespace FurnitureInventory.Api.Controllers;
 
@@ -35,7 +36,11 @@ public class FurnitureController : ControllerBase
     {
         var furniture = await _furnitureService.GetByIdAsync(id, cancellationToken);
         if (furniture == null)
-            return NotFound();
+            return NotFound(new ApiErrorResponse 
+            { 
+                ErrorCode = ErrorCodes.FURNITURE_NOT_FOUND,
+                Message = "Furniture not found"
+            });
 
         return Ok(furniture);
     }
@@ -48,7 +53,11 @@ public class FurnitureController : ControllerBase
     {
         var furniture = await _furnitureService.GetByBarcodeAsync(barcode, cancellationToken);
         if (furniture == null)
-            return NotFound();
+            return NotFound(new ApiErrorResponse 
+            { 
+                ErrorCode = ErrorCodes.FURNITURE_NOT_FOUND,
+                Message = "Furniture not found"
+            });
 
         return Ok(furniture);
     }
@@ -74,7 +83,12 @@ public class FurnitureController : ControllerBase
     public async Task<ActionResult<Furniture>> Create([FromBody] Furniture furniture, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest(new ApiErrorResponse 
+            { 
+                ErrorCode = ErrorCodes.VALIDATION_ERROR,
+                Message = "Model validation failed",
+                Details = ModelState
+            });
 
         var created = await _furnitureService.CreateAsync(furniture, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
@@ -87,10 +101,19 @@ public class FurnitureController : ControllerBase
     public async Task<ActionResult<Furniture>> Update(int id, [FromBody] Furniture furniture, CancellationToken cancellationToken)
     {
         if (id != furniture.Id)
-            return BadRequest("ID mismatch");
+            return BadRequest(new ApiErrorResponse 
+            { 
+                ErrorCode = ErrorCodes.ID_MISMATCH,
+                Message = "ID mismatch"
+            });
 
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest(new ApiErrorResponse 
+            { 
+                ErrorCode = ErrorCodes.VALIDATION_ERROR,
+                Message = "Model validation failed",
+                Details = ModelState
+            });
 
         var updated = await _furnitureService.UpdateAsync(furniture, cancellationToken);
         return Ok(updated);
@@ -104,7 +127,11 @@ public class FurnitureController : ControllerBase
     {
         var result = await _furnitureService.DeleteAsync(id, cancellationToken);
         if (!result)
-            return NotFound();
+            return NotFound(new ApiErrorResponse 
+            { 
+                ErrorCode = ErrorCodes.FURNITURE_NOT_FOUND,
+                Message = "Furniture not found"
+            });
 
         return NoContent();
     }
@@ -117,7 +144,11 @@ public class FurnitureController : ControllerBase
     {
         var result = await _furnitureService.AssignLocationAsync(id, locationId, cancellationToken);
         if (!result)
-            return NotFound();
+            return NotFound(new ApiErrorResponse 
+            { 
+                ErrorCode = ErrorCodes.OPERATION_FAILED,
+                Message = "Operation failed - furniture or location not found"
+            });
 
         return NoContent();
     }
@@ -130,7 +161,11 @@ public class FurnitureController : ControllerBase
     {
         var result = await _furnitureService.AssignRfidTagAsync(id, rfidTagId, cancellationToken);
         if (!result)
-            return NotFound();
+            return NotFound(new ApiErrorResponse 
+            { 
+                ErrorCode = ErrorCodes.OPERATION_FAILED,
+                Message = "Operation failed - furniture or RFID tag not found"
+            });
 
         return NoContent();
     }
@@ -143,7 +178,11 @@ public class FurnitureController : ControllerBase
     {
         var position = await _furnitureService.GetPositionAsync(id, cancellationToken);
         if (position == null)
-            return NotFound();
+            return NotFound(new ApiErrorResponse 
+            { 
+                ErrorCode = ErrorCodes.FURNITURE_NOT_FOUND,
+                Message = "Furniture not found"
+            });
 
         return Ok(new { x = position.Value.x, y = position.Value.y });
     }

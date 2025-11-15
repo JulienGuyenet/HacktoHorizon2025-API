@@ -12,6 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Resources\**\*.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FurnitureInventory.Core\FurnitureInventory.Core.csproj" />
     <ProjectReference Include="..\FurnitureInventory.Infrastructure\FurnitureInventory.Infrastructure.csproj" />
   </ItemGroup>
