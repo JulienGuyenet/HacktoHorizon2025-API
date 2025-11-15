@@ -27,6 +27,8 @@ WORKDIR /app
 
 # Copy the published application from the build stage
 COPY --from=build /app/publish .
+# Copy xlsx data files
+COPY /src/data /app/data
 
 # Create directory for SQLite database
 RUN mkdir -p /app/data

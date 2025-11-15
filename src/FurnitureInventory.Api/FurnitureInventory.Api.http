@@ -1,6 +1,19 @@
-@FurnitureInventory.Api_HostAddress = http://localhost:5281
+@FurnitureInventory.Api_HostAddress = http://localhost:8080
 
 GET {{FurnitureInventory.Api_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+POST {{FurnitureInventory.Api_HostAddress}}/api/import/default
+
+###
+POST {{FurnitureInventory.Api_HostAddress}}/api/import/upload
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="VIOTTE_Inventaire_20251114.csv"
+Content-Type: text/csv
+
+< ../docs/data/VIOTTE_Inventaire_20251114.csv
+--boundary--
+
