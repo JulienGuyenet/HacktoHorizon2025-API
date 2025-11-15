@@ -1,0 +1,41 @@
+[
+  {
+    "reference": "REF-001",
+    "designation": "Bureau ajustable électrique",
+    "famille": "Bureau",
+    "type": "Électrique",
+    "fournisseur": "IKEA",
+    "utilisateur": "Jean Dupont",
+    "codeBarre": "123456789",
+    "numeroSerie": "SN-001",
+    "informations": "Hauteur réglable 65-130cm",
+    "site": "Dijon",
+    "dateLivraison": "2024-01-15T00:00:00"
+  },
+  {
+    "reference": "REF-002",
+    "designation": "Chaise ergonomique",
+    "famille": "Chaise",
+    "type": "Ergonomique",
+    "fournisseur": "Herman Miller",
+    "utilisateur": "Marie Martin",
+    "codeBarre": "987654321",
+    "numeroSerie": "SN-002",
+    "informations": "Support lombaire ajustable",
+    "site": "Besançon",
+    "dateLivraison": "2024-02-20T00:00:00"
+  },
+  {
+    "reference": "REF-003",
+    "designation": "Armoire de rangement",
+    "famille": "Armoire",
+    "type": "Métallique",
+    "fournisseur": "Bisley",
+    "utilisateur": "",
+    "codeBarre": "456789123",
+    "numeroSerie": "SN-003",
+    "informations": "4 tiroirs avec serrure",
+    "site": "Dijon",
+    "dateLivraison": "2024-03-10T00:00:00"
+  }
+]

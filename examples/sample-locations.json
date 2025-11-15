@@ -1,0 +1,23 @@
+[
+  {
+    "buildingName": "Bâtiment A",
+    "floor": "1",
+    "room": "101",
+    "zone": "Coin fenêtre",
+    "description": "Bureau principal - près de la fenêtre"
+  },
+  {
+    "buildingName": "Bâtiment A",
+    "floor": "2",
+    "room": "205",
+    "zone": "Centre",
+    "description": "Salle de réunion"
+  },
+  {
+    "buildingName": "Bâtiment B",
+    "floor": "RDC",
+    "room": "Accueil",
+    "zone": "Entrée",
+    "description": "Hall d'accueil"
+  }
+]
