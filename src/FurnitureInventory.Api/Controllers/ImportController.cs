@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using FurnitureInventory.Core.Interfaces;
+using FurnitureInventory.Api.Models;
+using Microsoft.Extensions.Localization;
+using FurnitureInventory.Api.Resources;
 
 namespace FurnitureInventory.Api.Controllers;
 
@@ -13,15 +16,18 @@ public class ImportController : ControllerBase
     private readonly IExcelImportService _importService;
     private readonly ILogger<ImportController> _logger;
     private readonly IWebHostEnvironment _environment;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
     public ImportController(
         IExcelImportService importService, 
         ILogger<ImportController> logger,
-        IWebHostEnvironment environment)
+        IWebHostEnvironment environment,
+        IStringLocalizer<SharedResources> localizer)
     {
         _importService = importService;
         _logger = logger;
         _environment = environment;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -43,26 +49,34 @@ public class ImportController : ControllerBase
             if (!System.IO.File.Exists(csvPath))
             {
                 _logger.LogWarning("Fichier CSV non trouvé: {Path}", csvPath);
-                return NotFound(new { message = "Fichier CSV par défaut non trouvé", path = csvPath });
+                return NotFound(new ApiErrorResponse
+                {
+                    ErrorCode = ErrorCodes.FILE_NOT_FOUND,
+                    Message = "Default CSV file not found",
+                    Details = new { path = csvPath }
+                });
             }
 
             _logger.LogInformation("Début de l'import depuis: {Path}", csvPath);
             var count = await _importService.ImportFurnitureFromExcelAsync(csvPath, cancellationToken);
 
+            // Use localized message for server-generated content
+            var message = _localizer["Notification.ImportSuccess", count].Value;
+
             return Ok(new ImportResult 
             { 
                 Success = true, 
                 ImportedCount = count,
-                Message = $"{count} meubles importés avec succès depuis le fichier par défaut"
+                Message = message
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors de l'import des données par défaut");
-            return StatusCode(500, new ImportResult 
-            { 
-                Success = false, 
-                Message = $"Erreur lors de l'import: {ex.Message}" 
+            return StatusCode(500, new ApiErrorResponse
+            {
+                ErrorCode = ErrorCodes.IMPORT_ERROR,
+                Message = $"Import error: {ex.Message}"
             });
         }
     }
@@ -83,10 +97,10 @@ public class ImportController : ControllerBase
         {
             if (file == null || file.Length == 0)
             {
-                return BadRequest(new ImportResult 
-                { 
-                    Success = false, 
-                    Message = "Aucun fichier fourni" 
+                return BadRequest(new ApiErrorResponse
+                {
+                    ErrorCode = ErrorCodes.FILE_NOT_PROVIDED,
+                    Message = "No file provided"
                 });
             }
 
@@ -94,10 +108,11 @@ public class ImportController : ControllerBase
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (extension != ".xlsx" && extension != ".xls" && extension != ".csv")
             {
-                return BadRequest(new ImportResult 
-                { 
-                    Success = false, 
-                    Message = "Format de fichier non supporté. Utilisez .xlsx, .xls ou .csv" 
+                return BadRequest(new ApiErrorResponse
+                {
+                    ErrorCode = ErrorCodes.INVALID_FILE_FORMAT,
+                    Message = "Unsupported file format. Use .xlsx, .xls or .csv",
+                    Details = new { supportedFormats = new[] { ".xlsx", ".xls", ".csv" } }
                 });
             }
 
@@ -106,20 +121,23 @@ public class ImportController : ControllerBase
             using var stream = file.OpenReadStream();
             var count = await _importService.ImportFurnitureFromExcelAsync(stream, cancellationToken);
 
+            // Use localized message for server-generated content
+            var message = _localizer["Notification.ImportUploadSuccess", count, file.FileName].Value;
+
             return Ok(new ImportResult 
             { 
                 Success = true, 
                 ImportedCount = count,
-                Message = $"{count} meubles importés avec succès depuis {file.FileName}"
+                Message = message
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors de l'import du fichier uploadé");
-            return StatusCode(500, new ImportResult 
-            { 
-                Success = false, 
-                Message = $"Erreur lors de l'import: {ex.Message}" 
+            return StatusCode(500, new ApiErrorResponse
+            {
+                ErrorCode = ErrorCodes.IMPORT_ERROR,
+                Message = $"Import error: {ex.Message}"
             });
         }
     }
@@ -138,20 +156,21 @@ public class ImportController : ControllerBase
         {
             if (file == null || file.Length == 0)
             {
-                return BadRequest(new ValidationResult 
-                { 
-                    IsValid = false, 
-                    Message = "Aucun fichier fourni" 
+                return BadRequest(new ApiErrorResponse
+                {
+                    ErrorCode = ErrorCodes.FILE_NOT_PROVIDED,
+                    Message = "No file provided"
                 });
             }
 
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (extension != ".xlsx" && extension != ".xls" && extension != ".csv")
             {
-                return BadRequest(new ValidationResult 
-                { 
-                    IsValid = false, 
-                    Message = "Format de fichier non supporté. Utilisez .xlsx, .xls ou .csv" 
+                return BadRequest(new ApiErrorResponse
+                {
+                    ErrorCode = ErrorCodes.INVALID_FILE_FORMAT,
+                    Message = "Unsupported file format. Use .xlsx, .xls or .csv",
+                    Details = new { supportedFormats = new[] { ".xlsx", ".xls", ".csv" } }
                 });
             }
 
@@ -166,12 +185,14 @@ public class ImportController : ControllerBase
 
                 var isValid = await _importService.ValidateExcelFileAsync(tempPath);
 
+                // Use localized messages for server-generated content
+                var validMessage = _localizer["Server.FileValidation.Valid"].Value;
+                var invalidMessage = _localizer["Server.FileValidation.Invalid"].Value;
+
                 return Ok(new ValidationResult 
                 { 
                     IsValid = isValid, 
-                    Message = isValid 
-                        ? "Le fichier est valide et peut être importé" 
-                        : "Le fichier n'est pas valide ou ne contient pas les colonnes requises"
+                    Message = isValid ? validMessage : invalidMessage
                 });
             }
             finally
@@ -185,10 +206,10 @@ public class ImportController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors de la validation du fichier");
-            return Ok(new ValidationResult 
-            { 
-                IsValid = false, 
-                Message = $"Erreur lors de la validation: {ex.Message}" 
+            return Ok(new ApiErrorResponse
+            {
+                ErrorCode = ErrorCodes.VALIDATION_FAILED,
+                Message = $"Validation error: {ex.Message}"
             });
         }
     }
