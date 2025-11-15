@@ -55,12 +55,24 @@ Documentation API :
 
 ✅ Gestion complète d'inventaire de meubles  
 ✅ Localisation dans les bâtiments (étage, salle, zone)  
+✅ **Positionnement x,y des meubles dans les plans d'étage**  
 ✅ Intégration RFID pour le tracking automatique  
 ✅ Base de données SQLite légère et portable  
 ✅ Architecture modulaire avec faible couplage  
 ✅ API REST documentée avec Swagger/OpenAPI  
 ✅ Conteneurisation Docker avec Docker Compose  
 ✅ Spécification OpenAPI 3.0 complète
+
+## 📍 Endpoints principaux
+
+- `GET /api/Furniture` - Liste tous les meubles
+- `GET /api/Furniture/{id}` - Détails d'un meuble
+- `GET /api/Furniture/{id}/position` - **Position x,y d'un meuble**
+- `POST /api/Furniture` - Créer un meuble
+- `GET /api/Location` - Liste des localisations
+- `GET /api/Rfid/tags` - Liste des tags RFID
+
+Consultez [examples/position-api-example.md](examples/position-api-example.md) pour des exemples d'utilisation de l'API de position.
 
 ## 📊 Technologies
 
