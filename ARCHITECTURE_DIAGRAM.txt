@@ -1,0 +1,133 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                  FURNITURE INVENTORY API - ARCHITECTURE                    ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          API LAYER (Presentation)                        │
+│  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐  │
+│  │ FurnitureController│  │ LocationController │  │  RfidController   │  │
+│  │                    │  │                    │  │                    │  │
+│  │ • GET /furniture   │  │ • GET /location    │  │ • GET /tags        │  │
+│  │ • POST /furniture  │  │ • POST /location   │  │ • POST /tags       │  │
+│  │ • PUT /furniture   │  │ • PUT /location    │  │ • POST /read       │  │
+│  │ • DELETE /furniture│  │ • DELETE /location │  │ • GET /readers     │  │
+│  │ • Search endpoints │  │ • Search endpoints │  │ • Manage readers   │  │
+│  └─────────┬──────────┘  └─────────┬──────────┘  └─────────┬──────────┘  │
+└────────────┼─────────────────────────┼──────────────────────┼─────────────┘
+             │                         │                      │
+             └─────────────┬───────────┴──────────────────────┘
+                           │ Dependency Injection
+┌──────────────────────────┼──────────────────────────────────────────────┐
+│                    SERVICE LAYER (Business Logic)                        │
+│  ┌──────────────────────▼────────┐  ┌────────────────────┐              │
+│  │   IFurnitureService           │  │  ILocationService  │              │
+│  │   └─ FurnitureService         │  │  └─ LocationService│              │
+│  │                                │  │                    │              │
+│  │ • Business validation          │  │ • Location mgmt   │              │
+│  │ • Furniture management         │  │ • Furniture query │              │
+│  │ • Search & filtering           │  │   by location     │              │
+│  │ • RFID/Location assignment     │  │                   │              │
+│  └──────────────┬─────────────────┘  └────────┬───────────┘              │
+│                 │                              │                          │
+│  ┌──────────────▼──────────────────────────────▼───────────┐             │
+│  │               IRfidService                               │             │
+│  │               └─ RfidService                             │             │
+│  │                                                           │             │
+│  │ • Tag registration & management                          │             │
+│  │ • Reader registration & management                       │             │
+│  │ • Tag read processing                                    │             │
+│  │ • Automatic location updates                             │             │
+│  └──────────────┬────────────────────────────────────────────┘            │
+└─────────────────┼─────────────────────────────────────────────────────────┘
+                  │ Uses
+┌─────────────────┼─────────────────────────────────────────────────────────┐
+│            REPOSITORY LAYER (Data Access)                                 │
+│  ┌──────────────▼───────────┐  ┌─────────────────────┐                   │
+│  │ IFurnitureRepository      │  │ ILocationRepository │                   │
+│  │ └─ FurnitureRepository    │  │ └─ LocationRepository│                  │
+│  │                            │  │                     │                   │
+│  │ • CRUD operations          │  │ • CRUD operations   │                   │
+│  │ • Search by reference      │  │ • Search by building│                   │
+│  │ • Search by barcode        │  │ • Get with furniture│                   │
+│  │ • Search by family/site    │  │                     │                   │
+│  └────────────────────────────┘  └──────────────────────┘                  │
+│                                                                            │
+│  ┌─────────────────────────┐  ┌──────────────────────────┐               │
+│  │ IRfidTagRepository       │  │ IRfidReaderRepository    │               │
+│  │ └─ RfidTagRepository     │  │ └─ RfidReaderRepository  │               │
+│  │                          │  │                          │               │
+│  │ • Tag CRUD               │  │ • Reader CRUD            │               │
+│  │ • Search by TagId        │  │ • Search by ReaderId     │               │
+│  │ • Get unassigned         │  │ • Search by location     │               │
+│  │ • Update last read       │  │ • Update status          │               │
+│  └──────────┬───────────────┘  └────────────┬─────────────┘               │
+└─────────────┼──────────────────────────────┼─────────────────────────────┘
+              │                              │
+              └──────────────┬───────────────┘
+                             │ Entity Framework Core
+┌────────────────────────────┼────────────────────────────────────────────┐
+│                 DATABASE CONTEXT (Infrastructure)                        │
+│  ┌──────────────────────────▼────────────────────────────┐              │
+│  │         FurnitureInventoryContext                      │              │
+│  │                                                         │              │
+│  │ DbSet<Furniture>    DbSet<Location>                    │              │
+│  │ DbSet<RfidTag>      DbSet<RfidReader>                  │              │
+│  │                                                         │              │
+│  │ • Entity configurations                                │              │
+│  │ • Relationships & constraints                          │              │
+│  │ • Automatic timestamps                                 │              │
+│  │ • Indexes                                              │              │
+│  └──────────────────────────┬──────────────────────────────┘              │
+└─────────────────────────────┼─────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        SQLite DATABASE                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │ Tables: Furnitures, Locations, RfidTags, RfidReaders            │   │
+│  │ File: furnitureinventory.db                                      │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          DOMAIN ENTITIES                                 │
+│                                                                          │
+│  Furniture ◄──┬──► Location          RfidTag ◄──┬──► RfidReader        │
+│    │                                   │                │                │
+│    ├─ Reference (REQ)                  ├─ TagId (UNIQ) ├─ ReaderId(UNIQ)│
+│    ├─ Designation (REQ)                ├─ TagType       ├─ Name          │
+│    ├─ Famille                          ├─ Status        ├─ Model         │
+│    ├─ Type                             ├─ Activation    ├─ IpAddress     │
+│    ├─ Fournisseur                      ├─ LastRead      ├─ Status        │
+│    ├─ Utilisateur                      └─ LastReader    ├─ Location      │
+│    ├─ CodeBarre                                         └─ PowerLevel    │
+│    ├─ NumeroSerie       Location                                         │
+│    ├─ Informations        │                                              │
+│    ├─ Site                ├─ BuildingName (REQ)                          │
+│    ├─ DateLivraison       ├─ Floor                                       │
+│    ├─ LocationId          ├─ Room                                        │
+│    └─ RfidTagId           ├─ Zone                                        │
+│                           ├─ Description                                 │
+│                           ├─ Latitude/Longitude                          │
+│                           └─ GPS coordinates                             │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+DESIGN PRINCIPLES APPLIED:
+═══════════════════════════════════════════════════════════════════════════
+• Clean Architecture: Clear separation of concerns
+• Dependency Inversion: High-level modules don't depend on low-level
+• Interface Segregation: Small, focused interfaces
+• Repository Pattern: Data access abstraction
+• Dependency Injection: Loose coupling via DI container
+• Async/Await: Non-blocking I/O operations
+• SOLID Principles: Maintainable, extensible code
+
+TECHNOLOGY STACK:
+═══════════════════════════════════════════════════════════════════════════
+• .NET 9.0
+• ASP.NET Core Web API
+• Entity Framework Core 9.0
+• SQLite Database
+• Swashbuckle (Swagger/OpenAPI)
+• Dependency Injection (built-in)
