@@ -70,6 +70,17 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:9000")   // ton front
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // si besoin
+    });
+});
+
 var app = builder.Build();
 
 // Configure localization middleware
@@ -89,6 +100,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Furniture Inventory API v1"));
 }
+
+// MUST be before app.MapControllers()
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 

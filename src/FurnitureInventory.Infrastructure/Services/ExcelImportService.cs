@@ -336,7 +336,7 @@ public class ExcelImportService : IExcelImportService
             Utilisateur = GetCsvValue(columns, headers, "Utilisateur"),
             CodeBarre = GetCsvValue(columns, headers, "Code barre"),
             NumeroSerie = GetCsvValue(columns, headers, "N° série"),
-            Informations = GetCsvValue(columns, headers, "Informations"),
+            Informations = GetCsvValue(columns, headers, "Informations").TrimEnd(),
             Site = GetCsvValue(columns, headers, "Site"),
             CreatedAt = DateTime.UtcNow
         };
