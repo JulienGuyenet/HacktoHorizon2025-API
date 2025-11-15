@@ -30,20 +30,21 @@ docker-compose up -d
 # L'API est accessible sur http://localhost:8080
 ```
 
-Consultez [DOCKER.md](DOCKER.md) pour plus de détails sur le déploiement Docker.
+Consultez [docs/DOCKER.md](docs/DOCKER.md) pour plus de détails sur le déploiement Docker.
 
 ## 📖 Documentation complète
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) : Architecture détaillée, modèle de données, guide d'utilisation
-- [DOCKER.md](DOCKER.md) : Guide de déploiement Docker et Docker Compose
-- [openapi.yaml](openapi.yaml) : Spécification OpenAPI 3.0 complète de l'API
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) : Architecture détaillée, modèle de données, guide d'utilisation
+- [docs/DOCKER.md](docs/DOCKER.md) : Guide de déploiement Docker et Docker Compose
+- [docs/QUICKSTART.md](docs/QUICKSTART.md) : Guide de démarrage rapide
+- [docs/openapi.yaml](docs/openapi.yaml) : Spécification OpenAPI 3.0 complète de l'API
 
 Documentation API :
 - Architecture détaillée du projet
 - Modèle de données
 - Guide d'utilisation des endpoints
 - Instructions d'intégration RFID
-- Import de données Excel
+- Import de données Excel/CSV
 
 ## 🏗️ Architecture
 
@@ -72,7 +73,7 @@ Documentation API :
 - `GET /api/Location` - Liste des localisations
 - `GET /api/Rfid/tags` - Liste des tags RFID
 
-Consultez [examples/position-api-example.md](examples/position-api-example.md) pour des exemples d'utilisation de l'API de position.
+Consultez [docs/examples/position-api-example.md](docs/examples/position-api-example.md) pour des exemples d'utilisation de l'API de position.
 
 ## 📊 Technologies
 
