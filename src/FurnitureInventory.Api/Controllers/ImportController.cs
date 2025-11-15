@@ -44,7 +44,7 @@ public class ImportController : ControllerBase
         {
             // Chemin vers le fichier CSV par défaut
             var projectRoot = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "..", ".."));
-            var csvPath = Path.Combine(projectRoot, "app", "data", "VIOTTE_Inventaire_20251114.csv");
+            var csvPath = Path.Combine(projectRoot, "src", "data", "VIOTTE_Inventaire_20251114.csv");
 
             if (!System.IO.File.Exists(csvPath))
             {
