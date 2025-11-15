@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace FurnitureInventory.Core.Entities;
 
 /// <summary>
@@ -77,10 +79,12 @@ public class Furniture
     /// ID de la localisation actuelle
     /// </summary>
     public int? LocationId { get; set; }
-    
+
     /// <summary>
     /// Localisation actuelle du meuble
     /// </summary>
+    /// 
+    [JsonIgnore]
     public Location? Location { get; set; }
     
     /// <summary>

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace FurnitureInventory.Core.Entities;
 
 /// <summary>
@@ -41,11 +43,13 @@ public class Location
     /// Coordonnées GPS - Longitude
     /// </summary>
     public double? Longitude { get; set; }
-    
+
     // Relations
     /// <summary>
     /// Meubles présents à cette localisation
     /// </summary>
+    /// 
+    [JsonIgnore]
     public ICollection<Furniture> Furnitures { get; set; } = new List<Furniture>();
     
     /// <summary>
