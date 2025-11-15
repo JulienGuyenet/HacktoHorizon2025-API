@@ -43,6 +43,16 @@ public class Location
     /// Coordonnées GPS - Longitude
     /// </summary>
     public double? Longitude { get; set; }
+    
+    /// <summary>
+    /// Position X de la salle dans le plan d'étage (en mètres ou unités arbitraires)
+    /// </summary>
+    public double? PositionX { get; set; }
+    
+    /// <summary>
+    /// Position Y de la salle dans le plan d'étage (en mètres ou unités arbitraires)
+    /// </summary>
+    public double? PositionY { get; set; }
 
     // Relations
     /// <summary>

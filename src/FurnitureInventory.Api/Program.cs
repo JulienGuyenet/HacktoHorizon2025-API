@@ -28,6 +28,7 @@ builder.Services.AddScoped<IFurnitureService, FurnitureService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IRfidService, RfidService>();
 builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
+builder.Services.AddSingleton<IRoomCoordinateMapper, RoomCoordinateMapper>();
 
 // Configuration de la localisation
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
