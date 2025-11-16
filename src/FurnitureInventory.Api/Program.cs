@@ -75,7 +75,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("https://hacktohorizon-client.onrender.com/")   // ton front
+        policy.WithOrigins("https://hacktohorizon-client.onrender.com")   // ton front
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // si besoin
