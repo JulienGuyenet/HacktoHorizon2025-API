@@ -38,6 +38,7 @@ Consultez [docs/DOCKER.md](docs/DOCKER.md) pour plus de détails sur le déploie
 - [docs/DOCKER.md](docs/DOCKER.md) : Guide de déploiement Docker et Docker Compose
 - [docs/QUICKSTART.md](docs/QUICKSTART.md) : Guide de démarrage rapide
 - [docs/IMPORT.md](docs/IMPORT.md) : Guide d'import de données CSV/Excel
+- [docs/COORDINATE_MAPPING.md](docs/COORDINATE_MAPPING.md) : Mappage automatique des coordonnées X,Y des salles
 - [docs/openapi.yaml](docs/openapi.yaml) : Spécification OpenAPI 3.0 complète de l'API
 
 Documentation API :
@@ -45,7 +46,8 @@ Documentation API :
 - Modèle de données
 - Guide d'utilisation des endpoints
 - Instructions d'intégration RFID
-- Import de données Excel/CSV
+- Import de données Excel/CSV avec génération automatique de coordonnées
+- Mappage automatique de positions X,Y pour plans d'étage
 
 ## 🏗️ Architecture
 

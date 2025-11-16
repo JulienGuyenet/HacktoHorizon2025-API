@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation du Plan d'Étage - VIOTTE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .floor-selector {
+            margin: 20px 0;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 4px;
+        }
+        select {
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #4CAF50;
+        }
+        #floorPlan {
+            border: 2px solid #333;
+            background: #fafafa;
+            margin: 20px 0;
+        }
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+        }
+        .info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+        }
+        .furniture-list {
+            margin: 20px 0;
+        }
+        .furniture-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .furniture-item:hover {
+            background: #f5f5f5;
+        }
+        .furniture-item.selected {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 Visualisation du Plan d'Étage - Bâtiment VIOTTE</h1>
+        
+        <div class="info">
+            <h3>📍 À propos de ce système</h3>
+            <p>Cette démonstration montre comment les coordonnées X,Y sont automatiquement générées lors de l'import de données CSV/Excel.</p>
+            <p><strong>Algorithme :</strong> X = (salle % 100) × 5m, Y = (étage × 20m) + (préfixe salle × 5m)</p>
+        </div>
+
+        <div class="floor-selector">
+            <label for="floorSelect"><strong>Sélectionner un étage :</strong></label>
+            <select id="floorSelect">
+                <option value="1">1er étage</option>
+                <option value="2">2ème étage</option>
+                <option value="3">3ème étage</option>
+                <option value="4" selected>4ème étage</option>
+                <option value="5">5ème étage</option>
+                <option value="6">6ème étage</option>
+            </select>
+        </div>
+
+        <canvas id="floorPlan" width="800" height="400"></canvas>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4CAF50;"></div>
+                <span>Meuble</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #2196F3;"></div>
+                <span>Salle de réunion</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF9800;"></div>
+                <span>Salle de convivialité</span>
+            </div>
+        </div>
+
+        <div class="furniture-list" id="furnitureList"></div>
+    </div>
+
+    <script>
+        // Données d'exemple basées sur le fichier CSV
+        const sampleFurniture = [
+            { reference: 'FAUTDACTYOPE', designation: 'Fauteuil dactylo opérateur', room: '417', floor: '4', positionX: 85, positionY: 100 },
+            { reference: 'PDROIT1600P8', designation: 'Plan droit L1600 P8', room: '105', floor: '1', positionX: 25, positionY: 25 },
+            { reference: 'FAUTDACTYOPE', designation: 'Fauteuil dactylo opérateur', room: '318', floor: '3', positionX: 90, positionY: 75 },
+            { reference: 'FAUTDACTYOPE', designation: 'Fauteuil dactylo opérateur', room: '414', floor: '4', positionX: 70, positionY: 100 },
+            { reference: 'SALEREUNION', designation: 'Salle de réunion', room: '201', floor: '2', positionX: 5, positionY: 50, type: 'meeting' },
+            { reference: 'SALEREUNION', designation: 'Salle de réunion', room: '234', floor: '2', positionX: 170, positionY: 50, type: 'meeting' },
+            { reference: 'SALECONVIV', designation: 'Salle de convivialité', room: '130', floor: '1', positionX: 150, positionY: 25, type: 'social' },
+            { reference: 'PDROIT1600P8', designation: 'Bureau', room: '621', floor: '6', positionX: 105, positionY: 150 },
+            { reference: 'FAUTDACTYOPE', designation: 'Fauteuil', room: '603', floor: '6', positionX: 15, positionY: 150 },
+            { reference: 'FAUTDACTYOPE', designation: 'Fauteuil', room: '415', floor: '4', positionX: 75, positionY: 100 },
+        ];
+
+        const canvas = document.getElementById('floorPlan');
+        const ctx = canvas.getContext('2d');
+        const floorSelect = document.getElementById('floorSelect');
+        const furnitureList = document.getElementById('furnitureList');
+        let selectedFurniture = null;
+
+        function drawFloorPlan(floor) {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Filter furniture for this floor
+            const floorFurniture = sampleFurniture.filter(f => f.floor === floor);
+            
+            // Draw furniture
+            floorFurniture.forEach(furniture => {
+                const scale = 2; // Scale down coordinates to fit canvas
+                const x = furniture.positionX * scale;
+                const y = canvas.height - (furniture.positionY * scale); // Flip Y axis for canvas
+                
+                // Choose color based on type
+                if (furniture.type === 'meeting') {
+                    ctx.fillStyle = '#2196F3';
+                } else if (furniture.type === 'social') {
+                    ctx.fillStyle = '#FF9800';
+                } else {
+                    ctx.fillStyle = '#4CAF50';
+                }
+                
+                if (selectedFurniture === furniture) {
+                    ctx.fillStyle = '#F44336'; // Red for selected
+                }
+                
+                // Draw furniture marker
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw room number
+                ctx.fillStyle = '#333';
+                ctx.font = '10px Arial';
+                ctx.fillText(furniture.room, x + 10, y - 10);
+            });
+
+            // Update furniture list
+            updateFurnitureList(floorFurniture);
+        }
+
+        function updateFurnitureList(furniture) {
+            furnitureList.innerHTML = '<h3>📋 Meubles sur cet étage :</h3>';
+            
+            if (furniture.length === 0) {
+                furnitureList.innerHTML += '<p><em>Aucun meuble sur cet étage dans les données d\'exemple</em></p>';
+                return;
+            }
+            
+            furniture.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'furniture-item';
+                if (selectedFurniture === f) {
+                    div.classList.add('selected');
+                }
+                div.innerHTML = `
+                    <strong>Salle ${f.room}</strong> - ${f.designation}<br>
+                    <small>Coordonnées: X=${f.positionX}m, Y=${f.positionY}m</small>
+                `;
+                div.onclick = () => {
+                    selectedFurniture = f;
+                    drawFloorPlan(floorSelect.value);
+                };
+                furnitureList.appendChild(div);
+            });
+        }
+
+        floorSelect.addEventListener('change', (e) => {
+            selectedFurniture = null;
+            drawFloorPlan(e.target.value);
+        });
+
+        // Initial draw
+        drawFloorPlan('4');
+    </script>
+</body>
+</html>

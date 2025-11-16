@@ -37,6 +37,27 @@ Le service d'import parse automatiquement ce format pour créer des entités `Lo
 - **Floor** : Étage (ex: 4eme etage)
 - **Room** : Salle/pièce (ex: 417)
 - **Description** : Chemin complet
+- **PositionX** : Coordonnée X automatique basée sur le numéro de salle
+- **PositionY** : Coordonnée Y automatique basée sur l'étage et la salle
+
+### 📍 Génération automatique des coordonnées X,Y
+
+Le système génère automatiquement des coordonnées X,Y pour chaque salle afin de permettre le positionnement sur un plan d'étage :
+
+#### Algorithme de génération
+- **Coordonnée X** : `(numéro de salle % 100) × 5` mètres
+- **Coordonnée Y** : `(étage × 20) + (préfixe de salle × 5)` mètres
+
+#### Exemples de coordonnées générées
+| Salle | Étage | Coordonnées (X, Y) | Explication |
+|-------|-------|-------------------|-------------|
+| 417 | 4ème étage | (85, 100) | X=17×5=85, Y=4×20+4×5=100 |
+| 105 | 1er étage | (25, 25) | X=5×5=25, Y=1×20+1×5=25 |
+| 621 | 6ème étage | (105, 150) | X=21×5=105, Y=6×20+6×5=150 |
+| 201 - Salle de réunion | 2ème étage | (5, 50) | X=1×5=5, Y=2×20+2×5=50 |
+| rdc | RDC | (null, null) | Pas de salle spécifique |
+
+Les coordonnées sont propagées automatiquement aux meubles lors de l'import, permettant leur affichage sur un plan d'étage.
 
 ## 🚀 Utilisation de l'API
 
@@ -127,10 +148,11 @@ Le service d'import :
 ## 📊 Résultats
 
 L'import avec le fichier par défaut crée :
-- **4140 meubles** avec toutes leurs propriétés
-- **66 localisations uniques** extraites automatiquement des chemins `Site`
+- **4140 meubles** avec toutes leurs propriétés et coordonnées X,Y automatiques
+- **66 localisations uniques** extraites automatiquement des chemins `Site` avec coordonnées
+- **Positionnement automatique** de chaque meuble sur le plan d'étage de sa salle
 
-Chaque meuble est automatiquement lié à sa localisation correspondante dans la base de données.
+Chaque meuble est automatiquement lié à sa localisation correspondante dans la base de données avec ses coordonnées X,Y.
 
 ## 🎯 Exemples de données importées
 
@@ -144,7 +166,9 @@ Chaque meuble est automatiquement lié à sa localisation correspondante dans la
   "fournisseur": "EquipBuro",
   "codeBarre": "16953",
   "site": "25\\BESANCON\\Siege\\VIOTTE\\1er etage\\105",
-  "locationId": 12
+  "locationId": 12,
+  "positionX": 25.0,
+  "positionY": 25.0
 }
 ```
 
@@ -154,6 +178,8 @@ Chaque meuble est automatiquement lié à sa localisation correspondante dans la
   "buildingName": "VIOTTE",
   "floor": "1er etage",
   "room": "105",
-  "description": "25\\BESANCON\\Siege\\VIOTTE\\1er etage\\105"
+  "description": "25\\BESANCON\\Siege\\VIOTTE\\1er etage\\105",
+  "positionX": 25.0,
+  "positionY": 25.0
 }
 ```

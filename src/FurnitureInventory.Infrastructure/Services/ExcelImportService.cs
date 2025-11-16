@@ -13,15 +13,18 @@ public class ExcelImportService : IExcelImportService
 {
     private readonly IFurnitureRepository _furnitureRepository;
     private readonly ILocationRepository _locationRepository;
+    private readonly IRoomCoordinateMapper _roomCoordinateMapper;
     private readonly ILogger<ExcelImportService> _logger;
 
     public ExcelImportService(
         IFurnitureRepository furnitureRepository,
         ILocationRepository locationRepository,
+        IRoomCoordinateMapper roomCoordinateMapper,
         ILogger<ExcelImportService> logger)
     {
         _furnitureRepository = furnitureRepository;
         _locationRepository = locationRepository;
+        _roomCoordinateMapper = roomCoordinateMapper;
         _logger = logger;
         
         // Configure EPPlus license context
@@ -193,6 +196,9 @@ public class ExcelImportService : IExcelImportService
             if (location != null)
             {
                 furniture.LocationId = location.Id;
+                // Assigner les coordonnées de la salle au meuble
+                furniture.PositionX = location.PositionX;
+                furniture.PositionY = location.PositionY;
             }
         }
 
@@ -221,12 +227,17 @@ public class ExcelImportService : IExcelImportService
         var floor = parts.Length > 4 ? parts[4] : null; // 4eme etage
         var room = parts.Length > 5 ? parts[5] : null; // 417
 
+        // Obtenir les coordonnées pour cette salle
+        var (posX, posY) = _roomCoordinateMapper.GetRoomCoordinates(buildingName, floor, room);
+
         var location = new Location
         {
             BuildingName = buildingName,
             Floor = floor,
             Room = room,
             Description = siteValue,
+            PositionX = posX,
+            PositionY = posY,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -356,6 +367,9 @@ public class ExcelImportService : IExcelImportService
             if (location != null)
             {
                 furniture.LocationId = location.Id;
+                // Assigner les coordonnées de la salle au meuble
+                furniture.PositionX = location.PositionX;
+                furniture.PositionY = location.PositionY;
             }
         }
 
